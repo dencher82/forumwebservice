@@ -1,6 +1,5 @@
 package telran.ashkelon2020.service;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -9,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import telran.ashkelon2020.dao.ForumRepositoryMongoDB;
+import telran.ashkelon2020.dto.CommentDto;
+import telran.ashkelon2020.dto.DatePeriodDto;
 import telran.ashkelon2020.dto.MessageDto;
 import telran.ashkelon2020.dto.PostDto;
 import telran.ashkelon2020.dto.PostResponseDto;
@@ -71,8 +72,7 @@ public class ForumServiceImpl implements ForumService {
 	@Override
 	public boolean addLikeToPost(String id) {
 		Post post = forumRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id));
-		int like = post.getLikes();
-		post.setLikes(++like);
+		post.addLike();
 		forumRepository.save(post);
 		return true;
 	}
@@ -82,15 +82,46 @@ public class ForumServiceImpl implements ForumService {
 		Post post = forumRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id));
 		Comment comment = modelMapper.map(messageDto, Comment.class);
 		comment.setUser(user);
-		post.getComments().add(comment);
+		post.addComment(comment);
 		forumRepository.save(post);
 		return modelMapper.map(post, PostResponseDto.class);
 	}
 
 	@Override
-	public List<PostResponseDto> findPostsByAuthor(String author) {
+	public Iterable<PostResponseDto> findPostsByAuthor(String author) {
 		return forumRepository.findPostsByAuthor(author)
+				.map(p -> modelMapper.map(p, PostResponseDto.class))
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public Iterable<PostResponseDto> findPostsByTags(Set<String> tags) {
+		return forumRepository.findPostsByTagsContaining(tags)
 				.map(s -> modelMapper.map(s, PostResponseDto.class))
+				.collect(Collectors.toList());
+	}
+	
+	@Override
+	public Iterable<PostResponseDto> findPostsByDates(DatePeriodDto datePeriodDto) {
+		return forumRepository.findByDateCreatedBetween(datePeriodDto.getDateFrom(), datePeriodDto.getDateTo())
+				.map(s -> modelMapper.map(s, PostResponseDto.class))
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public Iterable<CommentDto> findAllPostComments(String id) {
+		Post post = forumRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id));
+		return post.getComments().stream()
+				.map(c -> modelMapper.map(c, CommentDto.class))
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public Iterable<CommentDto> findAllPostCommentsByAuthor(String id, String author) {
+		Post post = forumRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id));
+		return post.getComments().stream()
+				.filter(c -> author.equals(c.getUser()))
+				.map(c -> modelMapper.map(c, CommentDto.class))
 				.collect(Collectors.toList());
 	}
 

@@ -1,5 +1,7 @@
 package telran.ashkelon2020.dao;
 
+import java.time.LocalDate;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -11,5 +13,10 @@ import telran.ashkelon2020.model.Post;
 public interface ForumRepositoryMongoDB extends MongoRepository<Post, String>{
 	
 	Stream<Post> findPostsByAuthor(String author);
+	
+	Stream<Post> findPostsByTagsContaining(Set<String> tags);
+	
+//	@Query("{'dateCreated':{'$gte':?0,'$lte':?1}}")
+	Stream<Post> findByDateCreatedBetween(LocalDate dateFrom, LocalDate dateTo);
 	
 }
