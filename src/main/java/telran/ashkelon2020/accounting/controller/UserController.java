@@ -10,46 +10,53 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import telran.ashkelon2020.accounting.dto.UserDto;
+import telran.ashkelon2020.accounting.dto.UserChangePasswordDto;
+import telran.ashkelon2020.accounting.dto.UserLoginDto;
+import telran.ashkelon2020.accounting.dto.UserRegisterDto;
 import telran.ashkelon2020.accounting.dto.UserResponseDto;
 import telran.ashkelon2020.accounting.dto.UserUpdateDto;
 import telran.ashkelon2020.accounting.service.UserService;
 
 @RestController
-@RequestMapping("/forum/user")
+@RequestMapping("/forum")
 public class UserController {
 	
 	@Autowired
 	UserService userService;
 	
-	@PostMapping
-	public boolean addUser(@RequestBody UserDto userDto) {
-		return userService.addUser(userDto);
+	@PostMapping("/register")
+	public boolean addUser(@RequestBody UserRegisterDto userRegisterDto) {
+		return userService.addUser(userRegisterDto);
 	}
 	
-	@GetMapping("/{login}")
-	public UserResponseDto findUserByLogin(@PathVariable String login) {
-		return userService.findUserByLogin(login);
+	@GetMapping("/login")
+	public UserResponseDto findUserByLogin(@RequestBody UserLoginDto userLoginDto) {
+		return userService.findUserByLogin(userLoginDto.getLogin(), userLoginDto.getPassword());
 	}
 	
-	@DeleteMapping("/{login}")
-	public UserResponseDto deleteUser(@PathVariable String login) {
-		return userService.deleteUser(login);
+	@DeleteMapping("/delete/")
+	public UserResponseDto deleteUser(@RequestBody UserLoginDto userLoginDto) {
+		return userService.deleteUser(userLoginDto.getLogin(), userLoginDto.getPassword());
 	}
 	
-	@PutMapping("/{login}")
-	public UserResponseDto updateUser(@PathVariable String login, @RequestBody UserUpdateDto userUpdateDto) {
-		return userService.updateUser(login, userUpdateDto);
+	@PutMapping("/update")
+	public UserResponseDto updateUser(@RequestBody UserUpdateDto userUpdateDto) {
+		return userService.updateUser(userUpdateDto);
 	}
 
-	@PutMapping("/{login}/role/{role}")
+	@PutMapping("/user/{login}/role/{role}")
 	public UserResponseDto addRoleToUser(@PathVariable String login, @PathVariable String role) {
 		return userService.addRoleToUser(login, role);
 	}
 	
-	@DeleteMapping("/{login}/role/{role}")
+	@DeleteMapping("/user/{login}/role/{role}")
 	public UserResponseDto deleteRoleFromUser(@PathVariable String login, @PathVariable String role) {
 		return userService.deleteRoleFromUser(login, role);
+	}
+	
+	@PutMapping("/changepassword")
+	public UserResponseDto changeUserPassword(@RequestBody UserChangePasswordDto userChangePasswordDto) {
+		return userService.changeUserPassword(userChangePasswordDto);
 	}
 	
 }

@@ -11,32 +11,18 @@ import lombok.EqualsAndHashCode;
 import lombok.Setter;
 
 @Getter
+@Setter
 @EqualsAndHashCode(of = {"login"})
 @Document(collection = "users")
 public class User {
 	@Id
 	String login;
-	@Setter
 	String password;
-	@Setter
 	String firstName;
-	@Setter
 	String lastName;
-	LocalDate expDate = LocalDate.now().plusDays(30);
-	Set<Roles> roles = new HashSet<>();
-	
-	public User() {
-		roles.add(Roles.USER);
-	}
-
-	public User(String login, String password, String firstName, String lastName) {
-		this();
-		this.login = login;
-		this.password = password;
-		this.firstName = firstName;
-		this.lastName = lastName;
-	}
-	
+	LocalDate expDate;
+	Set<String> roles = new HashSet<>();
+		
 	/**
 	 * The method adds a role in set of roles
 	 * 
@@ -44,8 +30,7 @@ public class User {
 	 * @return
 	 */
 	public boolean addRole(String role) {
-		String newRole = role.toUpperCase();
-		return roles.add(Roles.valueOf(newRole));
+		return roles.add(role.toUpperCase());
 	}
 	
 	/**
@@ -55,8 +40,7 @@ public class User {
 	 * @return
 	 */
 	public boolean removeRole(String role) {
-		String newRole = role.toUpperCase();
-		return roles.remove(Roles.valueOf(newRole));
+		return roles.remove(role.toUpperCase());
 	}
 	
 }
