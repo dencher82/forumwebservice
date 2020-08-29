@@ -1,6 +1,5 @@
 package telran.ashkelon2020.accounting.service;
 
-import telran.ashkelon2020.accounting.dto.UserChangePasswordDto;
 import telran.ashkelon2020.accounting.dto.UserRegisterDto;
 import telran.ashkelon2020.accounting.dto.UserResponseDto;
 import telran.ashkelon2020.accounting.dto.UserUpdateDto;
@@ -9,16 +8,14 @@ public interface UserService {
 	
 	boolean addUser(UserRegisterDto userRegisterDto);
 	
-	UserResponseDto findUserByLogin(String login, String password);
+	UserResponseDto findUserByLogin(String login);
 	
-	UserResponseDto deleteUser(String login, String password);
+	UserResponseDto deleteUser(String login);
 	
-	UserResponseDto updateUser(UserUpdateDto userUpdateDto);
+	UserResponseDto updateUser(String login, UserUpdateDto userUpdateDto);
 	
-	UserResponseDto addRoleToUser(String login, String role);
+	UserResponseDto changeRolesList(String login, String role, boolean isAddRole);
 	
-	UserResponseDto deleteRoleFromUser(String login, String role);
-	
-	UserResponseDto changeUserPassword(UserChangePasswordDto userChangePasswordDto);
+	UserResponseDto changeUserPassword(String user, String newPassword);
 
 }

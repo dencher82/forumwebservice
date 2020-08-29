@@ -1,25 +1,25 @@
 package telran.ashkelon2020.accounting.service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jmx.export.annotation.ManagedAttribute;
+import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Component;
 
-import lombok.Getter;
-import lombok.Setter;
 import telran.ashkelon2020.accounting.dao.UserRepositoryMongoDB;
-import telran.ashkelon2020.accounting.dto.UserChangePasswordDto;
 import telran.ashkelon2020.accounting.dto.UserRegisterDto;
 import telran.ashkelon2020.accounting.dto.UserResponseDto;
 import telran.ashkelon2020.accounting.dto.UserUpdateDto;
-import telran.ashkelon2020.accounting.dto.exception.WrongPasswordsException;
 import telran.ashkelon2020.accounting.dto.exception.UnauthorizedException;
 import telran.ashkelon2020.accounting.dto.exception.UserNotFoundException;
 import telran.ashkelon2020.accounting.model.User;
 
 @Component
+@ManagedResource
 public class UserServiceImpl implements UserService {
 
 	@Autowired
@@ -28,52 +28,61 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	ModelMapper modelMapper;
 
-	@Getter
-	@Setter
 	@Value("${expdate.value}")
 	private long period;
 
-	@Getter
-	@Setter
 	@Value("${default.role}")
 	private String defaultUser;
+	
+	@ManagedAttribute // can see this attribute in Runtime (jconsole)
+	public long getPeriod() {
+		return period;
+	}
+	
+	@ManagedAttribute // can change this attribute in Runtime (jconsole)
+	public void setPeriod(long period) {
+		this.period = period;
+	}
+
+	public String getDefaultUser() {
+		return defaultUser;
+	}
+
+	public void setDefaultUser(String defaultUser) {
+		this.defaultUser = defaultUser;
+	}
 
 	@Override
 	public boolean addUser(UserRegisterDto userRegisterDto) {
 		if (userRepository.existsById(userRegisterDto.getLogin())) {
 			return false;
 		}
+		String hashPassword = BCrypt.hashpw(userRegisterDto.getPassword(), BCrypt.gensalt()); // create list of salts (hash)
 		User user = modelMapper.map(userRegisterDto, User.class);
-		user.setExpDate(LocalDate.now().plusDays(period));
+		user.setPassword(hashPassword);
+		user.setExpDate(LocalDateTime.now().plusDays(period));
 		user.addRole(defaultUser.toUpperCase());
 		userRegisterDto.getRoles().forEach((r) -> user.addRole(r.toString()));
 		userRepository.save(user);
 		return true;
 	}
-
+	
 	@Override
-	public UserResponseDto findUserByLogin(String login, String password) {
+	public UserResponseDto findUserByLogin(String login) {
 		User user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
-		if (!user.getPassword().equals(password)) {
-			throw new UnauthorizedException();
-		}
 		return modelMapper.map(user, UserResponseDto.class);
 	}
 
 	@Override
-	public UserResponseDto deleteUser(String login, String password) {
+	public UserResponseDto deleteUser(String login) {
 		User user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
-		if (!user.getPassword().equals(password)) {
-			throw new UnauthorizedException();
-		}
 		userRepository.deleteById(login);
 		return modelMapper.map(user, UserResponseDto.class);
 	}
 
 	@Override
-	public UserResponseDto updateUser(UserUpdateDto userUpdateDto) {
-		String login = userUpdateDto.getLogin();
-		User user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
+	public UserResponseDto updateUser(String login, UserUpdateDto userUpdateDto) {
+		User user = userRepository.findById(login).orElseThrow(() -> new UnauthorizedException());
 		String firstName = userUpdateDto.getFirstName();
 		if (firstName == null) {
 			firstName = user.getFirstName();
@@ -89,37 +98,25 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserResponseDto addRoleToUser(String login, String role) {
+	public UserResponseDto changeRolesList(String login, String role, boolean isAddRole) {
 		User user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
-		user.addRole(role);
-		userRepository.save(user);
-		return modelMapper.map(user, UserResponseDto.class);
-	}
-
-	@Override
-	public UserResponseDto deleteRoleFromUser(String login, String role) {
-		User user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
-		user.removeRole(role);
-		userRepository.save(user);
-		return modelMapper.map(user, UserResponseDto.class);
-	}
-
-	@Override
-	public UserResponseDto changeUserPassword(UserChangePasswordDto userChangePasswordDto) {
-		String login = userChangePasswordDto.getLogin();
-		String password = userChangePasswordDto.getPassword();
-		String newPassword = userChangePasswordDto.getNewPassword();
-		String newPasswordConfirm = userChangePasswordDto.getConfirmPassword();
-		if (newPassword == null || newPassword.equals(password) || !newPassword.equals(newPasswordConfirm)) {
-			throw new WrongPasswordsException();
+		if (isAddRole) {
+			user.addRole(role);
+		} else {
+			user.removeRole(role);
 		}
-		User user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
-		if (!user.getPassword().equals(userChangePasswordDto.getPassword())) {
-			throw new UnauthorizedException();
-		}
-		user.setPassword(newPassword);
 		userRepository.save(user);
 		return modelMapper.map(user, UserResponseDto.class);
 	}
+	
+	@Override
+	public UserResponseDto changeUserPassword(String login, String newPassword) {
+		User user = userRepository.findById(login).orElseThrow(() -> new UserNotFoundException(login));
+		String hashPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+		user.setPassword(hashPassword);
+		user.setExpDate(LocalDateTime.now().plusDays(period));
+		userRepository.save(user);
+		return modelMapper.map(user, UserResponseDto.class);
+	}	
 
 }

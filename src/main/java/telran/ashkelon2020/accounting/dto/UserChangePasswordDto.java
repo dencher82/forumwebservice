@@ -13,6 +13,5 @@ public class UserChangePasswordDto {
 	String login;
 	String password;
 	String newPassword;
-	String confirmPassword;
 	
 }

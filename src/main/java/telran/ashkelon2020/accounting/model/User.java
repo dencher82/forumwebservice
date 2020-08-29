@@ -1,6 +1,6 @@
 package telran.ashkelon2020.accounting.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,7 +20,7 @@ public class User {
 	String password;
 	String firstName;
 	String lastName;
-	LocalDate expDate;
+	LocalDateTime expDate;
 	Set<String> roles = new HashSet<>();
 		
 	/**
