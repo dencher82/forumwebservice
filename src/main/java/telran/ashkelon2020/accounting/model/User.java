@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Getter;
 import lombok.EqualsAndHashCode;
 import lombok.Setter;
+import lombok.Singular;
 
 @Getter
 @Setter
@@ -21,6 +22,7 @@ public class User {
 	String firstName;
 	String lastName;
 	LocalDateTime expDate;
+	@Singular
 	Set<String> roles = new HashSet<>();
 		
 	/**

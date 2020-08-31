@@ -43,14 +43,10 @@ public class AccountSecurityImpl implements AccountSecurity {
 	}
 
 	@Override
-	public void checkAdminRole(String token) {
-		UserLoginDto adminLoginDto = tokenDecode(token);
-		User admin = userRepository.findById(adminLoginDto.getLogin())
-				.orElseThrow(() -> new UserNotFoundException(adminLoginDto.getLogin()));
-		if (!admin.getRoles().contains("ADMIN")) {
-			throw new ForbiddenException();
-		}
-		checkExpDate(adminLoginDto.getLogin());
+	public boolean checkAdminRole(String login, String role) {
+		User admin = userRepository.findById(login)
+				.orElseThrow(() -> new UserNotFoundException(login));
+		return admin.getRoles().contains(role);
 	}
 
 	private UserLoginDto tokenDecode(String token) {
@@ -63,5 +59,5 @@ public class AccountSecurityImpl implements AccountSecurity {
 			throw new UnauthorizedException();
 		}
 	}
-
+	
 }

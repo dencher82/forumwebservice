@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import telran.ashkelon2020.accounting.dto.UserRegisterDto;
 import telran.ashkelon2020.accounting.dto.UserResponseDto;
 import telran.ashkelon2020.accounting.dto.UserUpdateDto;
-import telran.ashkelon2020.accounting.dto.exception.ForbiddenException;
 import telran.ashkelon2020.accounting.service.UserService;
 import telran.ashkelon2020.accounting.service.security.AccountSecurity;
+import telran.ashkelon2020.accounting.service.security.Authenticated;
 
 @RestController
 @RequestMapping("/forum")
@@ -34,51 +34,52 @@ public class UserController {
 	}
 
 	@GetMapping("/login")
-	public UserResponseDto login(@RequestHeader("Authorization") String token) {
-		String user = securityService.getLogin(token);
-		securityService.checkExpDate(user);
+	public UserResponseDto login(@RequestHeader("Authorization") String token, String user) {
+//		String user = securityService.getLogin(token);
+//		securityService.checkExpDate(user);
 		return userService.findUserByLogin(user);
 	}
 
 	@DeleteMapping("/delete/{login}")
 	public UserResponseDto deleteUser(@PathVariable String login, @RequestHeader("Authorization") String token) {
-		String user = securityService.getLogin(token);
-		if (!user.equals(login)) {
-			throw new ForbiddenException();
-		}
+//		String user = securityService.getLogin(token);
+//		if (!user.equals(login)) {
+//			throw new ForbiddenException();
+//		}
 		return userService.deleteUser(login);
 	}
 
 	@PutMapping("/update/{login}")
-	public UserResponseDto updateUser(@PathVariable String login, @RequestBody UserUpdateDto userUpdateDto,
-			@RequestHeader("Authorization") String token) {
-		String user = securityService.getLogin(token);
-		securityService.checkExpDate(user);
-		if (!user.equals(login)) {
-			throw new ForbiddenException();
-		}
+	public UserResponseDto updateUser(@PathVariable String login, @RequestHeader("Authorization") String token,
+			@RequestBody UserUpdateDto userUpdateDto) {
+//		String user = securityService.getLogin(token);
+//		securityService.checkExpDate(user);
+//		if (!user.equals(login)) {
+//			throw new ForbiddenException();
+//		}
 		return userService.updateUser(login, userUpdateDto);
 	}
 
 	@PutMapping("/user/{login}/role/{role}")
-	public UserResponseDto addRoleToUser(@PathVariable String login, @PathVariable String role,
+	public UserResponseDto addRole(@PathVariable String login, @PathVariable String role,
 			@RequestHeader("Authorization") String token) {
-		securityService.checkAdminRole(token);
+//		securityService.checkAdminRole(token);
 		return userService.changeRolesList(login, role, true);
 	}
 
 	@DeleteMapping("/user/{login}/role/{role}")
-	public UserResponseDto deleteRoleFromUser(@PathVariable String login, @PathVariable String role,
+	public UserResponseDto deleteRole(@PathVariable String login, @PathVariable String role,
 			@RequestHeader("Authorization") String token) {
-		securityService.checkAdminRole(token);
+//		securityService.checkAdminRole(token);
 		return userService.changeRolesList(login, role, false);
 	}
 
 	@PutMapping("/changepassword")
+	@Authenticated
 	public UserResponseDto changeUserPassword(@RequestHeader("Authorization") String token,
-			@RequestHeader("X-Password") String password) {
-		String user = securityService.getLogin(token);
-		return userService.changeUserPassword(user, password);
+			@RequestHeader("X-Password") String newPassword, String user) {
+//		String user = securityService.getLogin(token);
+		return userService.changeUserPassword(user, newPassword);
 	}
 
 }

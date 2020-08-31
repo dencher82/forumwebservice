@@ -6,6 +6,6 @@ public interface AccountSecurity {
 	
 	void checkExpDate(String login);
 
-	void checkAdminRole(String token);
+	boolean checkAdminRole(String login, String role);
 	
 }
