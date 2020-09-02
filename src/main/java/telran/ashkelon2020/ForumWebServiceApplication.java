@@ -12,13 +12,13 @@ import telran.ashkelon2020.accounting.dao.UserRepositoryMongoDB;
 import telran.ashkelon2020.accounting.model.User;
 
 @SpringBootApplication
-public class ForumWebServiseApplication implements CommandLineRunner{
+public class ForumWebServiceApplication implements CommandLineRunner{
 	
 	@Autowired
 	UserRepositoryMongoDB userRepository;
 	
 	public static void main(String[] args) {
-		SpringApplication.run(ForumWebServiseApplication.class, args);
+		SpringApplication.run(ForumWebServiceApplication.class, args);
 	}
 
 	@Override
